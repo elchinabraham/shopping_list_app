@@ -6,6 +6,8 @@ import 'package:shopping_list_app/models/category.dart';
 
 import 'package:http/http.dart' as http;
 
+import '../models/grocery_item.dart';
+
 class NewItem extends StatefulWidget {
   const NewItem({super.key});
 
@@ -18,10 +20,15 @@ class _NewItemState extends State<NewItem> {
   var enteredName = '';
   var enteredQuantity = 1;
   var _selectedCategory = categories[Categories.vegetables]!;
+  var isLoaing = false;
 
   void _saveItem() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
+
+      setState(() {
+        isLoaing = true;
+      });
 
       // save data in firebase real time database
       final url = Uri.https(
@@ -42,6 +49,8 @@ class _NewItemState extends State<NewItem> {
         ),
       );
 
+      final Map<String, dynamic> responseData = json.decode(response.body);
+
       print(response.body);
       print(response.statusCode);
 
@@ -49,7 +58,12 @@ class _NewItemState extends State<NewItem> {
         return;
       }
 
-      Navigator.of(context).pop();
+      Navigator.of(context).pop(GroceryItem(
+        id: responseData['name'],
+        name: enteredName,
+        quantity: enteredQuantity,
+        category: _selectedCategory,
+      ));
     }
   }
 
@@ -145,13 +159,19 @@ class _NewItemState extends State<NewItem> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   TextButton(
-                    onPressed: _resetForm,
+                    onPressed: isLoaing ? null : _resetForm,
                     child: const Text('Reset'),
                   ),
                   const SizedBox(width: 10),
                   ElevatedButton(
                     onPressed: _saveItem,
-                    child: const Text('Save Item'),
+                    child: isLoaing
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(),
+                          )
+                        : const Text('Save Item'),
                   ),
                 ],
               )
