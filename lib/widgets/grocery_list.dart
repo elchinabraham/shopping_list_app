@@ -129,7 +129,8 @@ class _GroceryListState extends State<GroceryList> {
   @override
   Widget build(BuildContext context) {
     Widget content = !isLoading
-        ? const Center(child: Text('No items were added yet'))
+        ? //const Center(child: Text('No items were added yet'))
+        Center(child: Text(_identifier),)
         : const Center(
             child: CircularProgressIndicator(),
           );
