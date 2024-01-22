@@ -1,11 +1,13 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shopping_list_app/data/category.dart';
 import 'package:shopping_list_app/models/grocery_item.dart';
 import 'package:shopping_list_app/widgets/new_item.dart';
 
 import 'package:http/http.dart' as http;
+import 'package:unique_identifier/unique_identifier.dart';
 
 class GroceryList extends StatefulWidget {
   const GroceryList({super.key});
@@ -19,11 +21,28 @@ class _GroceryListState extends State<GroceryList> {
   String? _error;
 
   bool isLoading = true;
+  String _identifier = 'Unknown';
 
   @override
   void initState() {
     super.initState();
     _loadItems();
+    initUniqueIdentifierState();
+  }
+
+  Future<void> initUniqueIdentifierState() async {
+    String identifier;
+    try {
+      identifier = (await UniqueIdentifier.serial)!;
+    } on PlatformException {
+      identifier = 'Failed to get Unique Identifier';
+    }
+
+    if (!mounted) return;
+
+    setState(() {
+      _identifier = identifier;
+    });
   }
 
   void _loadItems() async {
@@ -146,7 +165,7 @@ class _GroceryListState extends State<GroceryList> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Your Groceries'),
+        title: Text(_identifier),
         actions: [
           IconButton(
             onPressed: _addItem,
